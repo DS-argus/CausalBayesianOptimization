@@ -1,0 +1,12 @@
+name: CBO
+channels:
+  - defaults
+dependencies:
+  - python=3.7.10
+  - pandas
+  - numpy
+  - seaborn
+  - scikit-learn
+  - matplotlib
+  - pip:
+    - emukit==0.4.10
