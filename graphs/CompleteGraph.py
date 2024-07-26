@@ -90,7 +90,7 @@ class CompleteGraph(graph.GraphStructure):
 
 
     def get_sets(self):
-        MIS = [['B'], ['D'], ['E'], ['B', 'D'], ['B', 'E'], ['D', 'E']]
+        MIS = [['B'], ['D'], ['E'], ['B', 'D'], ['B', 'E'], ['D', 'E']]   # E, B, D로 바뀌어야할 듯
         POMIS = [['B'], ['D'], ['E'], ['B', 'D'], ['D', 'E']]
         manipulative_variables = ['B', 'D', 'E']
         return MIS, POMIS, manipulative_variables
@@ -123,7 +123,7 @@ class CompleteGraph(graph.GraphStructure):
         return dict_ranges
 
 
-    def fit_all_models(self):
+    def fit_all_models(self): #애초에 전혀 안쓰이는 것 같은데?
         functions = {}
         inputs_list = [self.B, self.F, np.hstack((self.D,self.C)), np.hstack((self.B,self.C)), np.hstack((self.A,self.C,self.E)), np.hstack((self.B,self.C,self.D)), 
                     np.hstack((self.D,self.E,self.C,self.A)),np.hstack((self.B,self.E,self.C,self.A)), np.hstack((self.A,self.B,self.C,self.D,self.E)), 

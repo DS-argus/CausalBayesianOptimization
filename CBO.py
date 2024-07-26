@@ -39,6 +39,8 @@ def CBO(num_trials, exploration_set, manipulative_variables, data_x_list, data_y
 	type_trial = []
 
 	## Define intervention function
+	# space_list는 intervention variable이 정의된 영역
+	# target_function_list는 DGP 구현인듯 : system에 intervene했을 때 얻어진 Y값 구하기 위해서
 	for s in range(len(exploration_set)):
 		target_function_list[s], space_list[s] = Intervention_function(get_interventional_dict(exploration_set[s]),
 											model = graph.define_SEM(), target_variable = 'Y',
@@ -68,6 +70,7 @@ def CBO(num_trials, exploration_set, manipulative_variables, data_x_list, data_y
 			observed += 1
 			type_trial.append(0)
 			## Collect observations and append them to the current observational dataset
+			# num_additional_observations의 개수만큼 sampling
 			new_observational_samples = observe(num_observation = num_additional_observations, 
 												complete_dataset = full_observational_samples, 
 												initial_num_obs_samples= initial_num_obs_samples)
@@ -78,10 +81,11 @@ def CBO(num_trials, exploration_set, manipulative_variables, data_x_list, data_y
 			functions = graph.refit_models(observational_samples)
 			
 			## Update the mean functions and var functions given the current set of observational data. This is updating the prior. 
+			breakpoint()
 			mean_functions_list, var_functions_list = update_all_do_functions(graph, exploration_set, functions, dict_interventions, 
 														observational_samples, x_dict_mean, x_dict_var)
 			
-			## Update current optimal solution. If I observe the cost and the optimal y are the same of the previous trial
+			## Update current optimal solution. If I observe, the cost and the optimal y are the same of the previous trial
 			global_opt.append(global_opt[i])
 			current_cost.append(current_cost[i])
 
@@ -104,11 +108,12 @@ def CBO(num_trials, exploration_set, manipulative_variables, data_x_list, data_y
 			## If in the previous trial we have observed we want to update all the BO models as the mean functions and var functions computed 
 			## via the DO calculus are changed 
 			## If in the previous trial we have intervened we want to update only the BO model for the intervention for which we have collected additional data 
-			if type_trial[i-1] == 0:
+			if type_trial[i-1] == 0:		# 이번이 두번째 iteration이라면 interventional data를 이용해서 각 ES에 대한 GP model을 업데이트
 				for s in range(len(exploration_set)):
 					#print('Updating model:', s)
 					model_list[s] = update_BO_models(mean_functions_list[s], var_functions_list[s], data_x_list[s], data_y_list[s], Causal_prior)
 			else:
+				# index에 해당하는 ES에 대해서만, 즉 이전에 intervene해서 새롭게 데이터 추가된 ES에 대해서만 BO 업데이트
 				#print('Updating model:', index)
 				model_to_update = index
 				model_list[index] = update_BO_models(mean_functions_list[index], 
@@ -128,6 +133,8 @@ def CBO(num_trials, exploration_set, manipulative_variables, data_x_list, data_y
 
 
 			## Evaluate the target function at the new point
+			# 이걸 DGP로 안하고 GP로 해도 되는거 아닌가? 그럼 전체를 input으로 받는 GP를 또 학습시켜야하긴 함
+			# 이건 그냥 observation으로 생각하면 됨 -> 단지 미리 안만들어놨을 뿐
 			y_new = target_function_list[index](x_new_list[index])
 
 			print('Selected intervention: ', var_to_intervene)
@@ -136,12 +143,14 @@ def CBO(num_trials, exploration_set, manipulative_variables, data_x_list, data_y
 
 
 			## Append the new data and set the new dataset of the BO model
+			# intervention dataset에 방금 얻은 값 추가
 			data_x, data_y_x = add_data([data_x_list[index], data_y_list[index]], 
 												  [x_new_list[index], y_new])
 				
 			data_x_list[index] = np.vstack((data_x_list[index], x_new_list[index])) 
 			data_y_list[index] = np.vstack((data_y_list[index], y_new))
-		
+
+			# 누적 intervention data로 모델 재학습 -> Posterior update
 			model_list[index].set_data(data_x, data_y_x)
 				
 

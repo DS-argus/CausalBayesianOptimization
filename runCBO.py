@@ -84,6 +84,7 @@ if experiment == 'ToyGraph':
 if experiment == 'CompleteGraph':
     graph = CompleteGraph(observational_samples)
 
+# 얘네는 true_observational_samples가 왜있지? -> Graph에서 fit을 하네 true로 sampling된 값을 (real data라 functional relationship 알려고)
 if experiment == 'CoralGraph':
     true_observational_samples = pd.read_pickle('./Data/' + str(args.experiment) + '/' + 'true_observations.pkl')
     graph = CoralGraph(observational_samples, true_observational_samples)
@@ -101,6 +102,7 @@ pathlib.Path("./Data/" + folder).mkdir(parents=True, exist_ok=True)
 
 ## Givent the data fit all models used for do calculus
 functions = graph.fit_all_models()
+# functions = [] -> 이렇게 해도 되는 것 같은데 어차피 observaition phase에서 다시 training 함
 
 
 ## Define optimisation sets and the set of manipulative variables
@@ -118,10 +120,12 @@ interventional_data = np.load('./Data/' + str(args.experiment) + '/' + 'interven
 
 
 ## Get the initial optimal solution and the interventional data corresponding to a random permutation of the intervential data with seed given by name_index
+# num_interventions만큼의 데이터를 이용해서 그 안에서 최적의 y, X, x를 return
 data_x_list, data_y_list, best_intervention_value, opt_y, best_variable = define_initial_data_CBO(interventional_data, num_interventions, eval(exploration_set), name_index, task)
 
 
 ## Define cost structure
+# var: cost func 의 dictionary로 type_cost에 따라 cost func이 달라지고 구체적인 x를 넣으면 비용이 계산됨
 costs = graph.get_cost_structure(type_cost = type_cost)
 
 

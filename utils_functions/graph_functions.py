@@ -64,6 +64,11 @@ def intervene_dict(model, **interventions):
 def Intervention_function(*interventions, model, target_variable, 
                           min_intervention, 
                           max_intervention):
+    """
+    invertions : dict {'B': '', 'E', ''} 
+    model : OrderedDict()
+    min,max_intervention : list 
+    """
     num_samples = 100000
 
     assert len(min_intervention) == len(interventions[0])
@@ -81,6 +86,7 @@ def Intervention_function(*interventions, model, target_variable,
         return np.asarray(np.mean(samples['Y']))[np.newaxis,np.newaxis]
     
     ## Define parameter space
+    ## 각 변수의 min, max 범위를 parameter로 지정
     list_parameter = [None]*len(interventions[0])
     for i in range(len(interventions[0])):
         list_parameter[i] = ContinuousParameter(list(interventions[0].keys())[i], 
